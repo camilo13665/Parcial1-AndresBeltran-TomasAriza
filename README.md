@@ -165,17 +165,9 @@ curl http://localhost:3003/health
 curl http://localhost:3004/health
 ```
 
-Ejemplo de consulta de recursos:
 
-```bash
-curl "http://localhost:3002/resources?ciudad=CALI&estado=DISPONIBLE"
-```
 
-Ejemplo de historial de una emergencia:
 
-```bash
-curl "http://localhost:3004/notifications?emergenciaId=EMG-2026-0001"
-```
 
 ## Seguridad
 
@@ -189,14 +181,6 @@ curl "http://localhost:3004/notifications?emergenciaId=EMG-2026-0001"
 - La sesion administrativa se firma con HMAC-SHA256, tiene expiracion y compara firmas de forma segura.
 - `.env`, logs, dependencias y artefactos de compilacion estan excluidos de Git.
 
-### Recomendaciones para despliegue
-
-- Usar HTTPS para frontend y comunicaciones entre servicios.
-- Guardar secretos en un gestor como AWS Secrets Manager, Parameter Store o el sistema de secretos del proveedor de despliegue.
-- Crear politicas RLS explicitas en Supabase para cada rol y tabla.
-- Reemplazar credenciales administrativas simples por un proveedor de identidad con roles y rotacion de claves.
-- Restringir CORS a los dominios autorizados; la configuracion local permite origenes amplios para desarrollo.
-- Agregar rate limiting, auditoria, reintentos con backoff e idempotencia para operaciones distribuidas.
 
 ## Validacion del proyecto
 
@@ -217,10 +201,3 @@ npm run lint
 npm run build
 ```
 
-## Limitaciones conocidas
-
-- La comunicacion entre servicios es sincrona y no existe una cola de eventos.
-- No hay reintentos automaticos ni garantia de entrega cuando Notification esta caido.
-- No existen transacciones distribuidas para revertir una asignacion si falla la sincronizacion con Intake.
-- Notification registra eventos, pero no entrega avisos por canales externos.
-- La autenticacion administrativa actual es basica y debe evolucionar antes de un despliegue publico.
