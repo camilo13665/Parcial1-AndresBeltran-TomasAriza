@@ -1,0 +1,137 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+.emergency-marker {
+  background: transparent;
+  border: 0;
+}
+
+.emergency-marker span {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+}
+
+/*
+ * Sistema de Gestión de Emergencias — tokens de diseño
+ * -----------------------------------------------------
+ * Dirección visual: "centro de operaciones de emergencia" — superficie
+ * oscura tipo sala de situación, acentos de color tomados directamente del
+ * lenguaje real de triage (rojo/naranja/ámbar/azul), y tipografía monoespaciada
+ * para todo dato operativo (IDs, coordenadas, timestamps, puertos) — el mismo
+ * tratamiento que usan las consolas de despacho reales.
+ */
+:root {
+  --bg: #0a0f1a;
+  --bg-elevated: #0e1522;
+  --surface: #131b29;
+  --surface-raised: #19243590;
+  --border: #232f42;
+  --border-strong: #303f58;
+
+  --text-primary: #eef2f8;
+  --text-secondary: #97a3b8;
+  --text-muted: #5f6b81;
+
+  --accent: #2dd4cf;
+  --accent-soft: #2dd4cf1a;
+
+  --p1-critica: #ef4453;
+  --p1-critica-soft: #ef44531a;
+  --p2-alta: #f7891a;
+  --p2-alta-soft: #f7891a1a;
+  --p3-media: #f2b705;
+  --p3-media-soft: #f2b7051a;
+  --p4-baja: #4d8bfa;
+  --p4-baja-soft: #4d8bfa1a;
+
+  --ok: #2fbf71;
+  --warn: #f2b705;
+  --danger: #ef4453;
+
+  --font-display: ui-sans-serif, "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-body: ui-sans-serif, "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-p1: var(--p1-critica);
+  --color-p1-soft: var(--p1-critica-soft);
+  --color-p2: var(--p2-alta);
+  --color-p2-soft: var(--p2-alta-soft);
+  --color-p3: var(--p3-media);
+  --color-p3-soft: var(--p3-media-soft);
+  --color-p4: var(--p4-baja);
+  --color-p4-soft: var(--p4-baja-soft);
+
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+}
+
+/* Etiqueta pequeña en mayúsculas, tratamiento tipo "consola de despacho" */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Datos operativos: IDs, coordenadas, timestamps, puertos */
+.data-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}

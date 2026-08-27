@@ -1,0 +1,26 @@
+{
+  "name": "gestion-emergencias-2",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plataforma de gestión de emergencias — Arquitectura de Microservicios Serverless Resiliente (fase 1: estructura Frontend + Backend local)",
+  "workspaces": [
+    "frontend",
+    "backend/services/*"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:intake": "npm run dev --workspace=intake-triage",
+    "dev:dispatch": "npm run dev --workspace=dispatch",
+    "dev:geospatial": "npm run dev --workspace=geospatial",
+    "dev:notification": "npm run dev --workspace=notification",
+    "dev:backend": "node scripts/dev-backend.mjs",
+    "install:all": "npm install"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "unrs-resolver@1.12.2": true
+  }
+}

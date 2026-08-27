@@ -1,0 +1,1 @@
+export const ADMIN_SESSION_KEY = "gestion-emergencias-admin-v2";

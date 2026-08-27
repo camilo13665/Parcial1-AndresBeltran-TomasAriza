@@ -1,0 +1,12 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend de microservicios (Intake & Triage, Dispatch & Resource Assignment, Geospatial & Zone Aggregation, Notification & Status Broadcast). Cada servicio vive en services/<nombre> y se ejecuta de forma independiente.",
+  "scripts": {
+    "dev:intake": "npm run dev --workspace=intake-triage",
+    "dev:dispatch": "npm run dev --workspace=dispatch",
+    "dev:geospatial": "npm run dev --workspace=geospatial",
+    "dev:notification": "npm run dev --workspace=notification"
+  }
+}
