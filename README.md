@@ -50,21 +50,6 @@ Desde `gestion-emergencias-2/gestion-emergencias-2`:
 npm install
 ```
 
-### Configuracion de Supabase
-
-1. Crea un proyecto en Supabase.
-2. Ejecuta [docs/supabase-schema.sql](docs/supabase-schema.sql) en el SQL Editor.
-3. Crea un archivo `.env` en la raiz del proyecto con:
-
-```env
-SUPABASE_URL=https://tu-proyecto.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=tu-clave-service-role
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=elige-una-clave-segura
-ADMIN_SESSION_SECRET=una-clave-secreta-larga
-```
-
-El archivo `.env` es local y esta excluido por `.gitignore`. No publiques la `SUPABASE_SERVICE_ROLE_KEY` ni ninguna otra credencial.
 
 ## Ejecucion
 
