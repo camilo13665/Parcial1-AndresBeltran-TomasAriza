@@ -55,32 +55,36 @@ export default function EmergenciaDetallePage({ params }: { params: Promise<{ id
   const [state, setState] = useState<LoadState>("loading");
   const [reloadKey, setReloadKey] = useState(0);
 
-  const load = useCallback(async () => {
-    try {
-      const data = await emergenciesApi.get(id);
-      setEmergency(data as unknown as Emergency);
-      setState("live");
-    } catch (err) {
-      const mock = getEmergencyById(id);
-      if (err instanceof ApiError && err.status === undefined) {
-        // backend apagado — usar mock si existe
-        if (mock) {
-          setEmergency(mock);
-          setState("offline");
-        } else {
-          setState("not-found");
-        }
-      } else {
-        // backend respondió pero no encontró el recurso
-        setState(mock ? "offline" : "not-found");
-        if (mock) setEmergency(mock);
-      }
-    }
-  }, [id]);
-
   useEffect(() => {
-    load();
-  }, [load, reloadKey]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await emergenciesApi.get(id);
+        if (cancelled) return;
+        setEmergency(data as unknown as Emergency);
+        setState("live");
+      } catch (err) {
+        if (cancelled) return;
+        const mock = getEmergencyById(id);
+        if (err instanceof ApiError && err.status === undefined) {
+          // backend apagado — usar mock si existe
+          if (mock) {
+            setEmergency(mock);
+            setState("offline");
+          } else {
+            setState("not-found");
+          }
+        } else {
+          // backend respondió pero no encontró el recurso
+          setState(mock ? "offline" : "not-found");
+          if (mock) setEmergency(mock);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [id, reloadKey]);
 
   const handleChanged = useCallback(() => {
     setReloadKey((k) => k + 1);

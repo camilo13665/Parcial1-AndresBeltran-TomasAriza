@@ -10,16 +10,13 @@ export function AdminAccess({ redirectPath = "/dashboard" }: { redirectPath?: st
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [checking, setChecking] = useState(true);
+  // Se recalcula en cada render en vez de guardarse en estado: es una
+  // lectura síncrona de sessionStorage, no algo que necesite un efecto.
+  const hasSession = typeof window !== "undefined" && Boolean(sessionStorage.getItem(ADMIN_SESSION_KEY));
 
   useEffect(() => {
-    const token = sessionStorage.getItem(ADMIN_SESSION_KEY);
-    if (token) {
-      router.replace(redirectPath);
-      return;
-    }
-    setChecking(false);
-  }, [redirectPath, router]);
+    if (hasSession) router.replace(redirectPath);
+  }, [hasSession, redirectPath, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,7 +29,7 @@ export function AdminAccess({ redirectPath = "/dashboard" }: { redirectPath?: st
     }
   }
 
-  if (checking) return null;
+  if (hasSession) return null;
 
   return (
     <main className="flex-1 flex items-center justify-center px-4 py-12">
