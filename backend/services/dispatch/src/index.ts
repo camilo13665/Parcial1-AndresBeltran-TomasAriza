@@ -1,14 +1,10 @@
-import { config as loadEnv } from "dotenv";
-import { resolve } from "node:path";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
 import { healthRoutes } from "./routes/health.routes";
 import { dispatchRoutes } from "./routes/dispatch.routes";
 import { AppError } from "./errors";
-
-loadEnv({ path: resolve(process.cwd(), ".env") });
-loadEnv({ path: resolve(process.cwd(), "../../../.env") });
+import { loadConfig } from "./config/secrets";
 
 /**
  * Dispatch & Resource Assignment
@@ -28,6 +24,8 @@ const PORT = Number(process.env.PORT ?? 3002);
 const SERVICE_NAME = "dispatch";
 
 async function main() {
+  await loadConfig();
+
   const app = Fastify({ logger: true });
 
   // El error handler debe registrarse ANTES de los plugins de rutas: Fastify
@@ -69,4 +67,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((err) => {
+  console.error(`${SERVICE_NAME}: fallo al iniciar —`, err);
+  process.exit(1);
+});
