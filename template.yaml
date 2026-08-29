@@ -21,7 +21,10 @@ Globals:
   Function:
     Timeout: 10
     MemorySize: 512
-    Architectures: [arm64]
+    # x86_64 en vez de arm64: los runners de GitHub Actions son amd64, y la
+    # emulación QEMU de arm64 en Docker ahí falla ("exec format error") al
+    # correr npm dentro del contenedor. Lambda soporta x86_64 igual de bien.
+    Architectures: [x86_64]
     # Cada deploy publica una versión inmutable nueva y el alias "prod"
     # empieza a recibirla gradualmente (ver DeploymentPreference por
     # función, más abajo) en vez de saltar de golpe.
