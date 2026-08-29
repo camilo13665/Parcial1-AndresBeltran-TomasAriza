@@ -15,6 +15,8 @@ export interface Resource {
   organismo: string;
   ciudad: City;
   estado: ResourceStatus;
+  latitud?: number;
+  longitud?: number;
   fechaCreacion: string;
   fechaActualizacion: string;
 }
@@ -24,8 +26,33 @@ export const CreateResourceSchema = z.object({
   organismo: z.string().min(1).max(200),
   ciudad: CityEnum,
   estado: ResourceStatusEnum.default("DISPONIBLE"),
+  latitud: z.number().optional(),
+  longitud: z.number().optional(),
 });
 export type CreateResourceInput = z.infer<typeof CreateResourceSchema>;
+
+/** Query de GET /resources/nearby — proximidad real vía PostGIS (RPC nearby_resources). */
+export const NearbyResourcesQuerySchema = z.object({
+  latitud: z.coerce.number(),
+  longitud: z.coerce.number(),
+  radioMetros: z.coerce.number().positive().default(15000),
+  // z.coerce.boolean() coacciona con Boolean(str): "false" da true. Se
+  // acepta explícitamente "true"/"false" como texto de querystring.
+  soloDisponibles: z
+    .union([z.boolean(), z.enum(["true", "false"])])
+    .default(true)
+    .transform((value) => (typeof value === "boolean" ? value : value === "true")),
+});
+export type NearbyResourcesQuery = z.infer<typeof NearbyResourcesQuerySchema>;
+
+export interface NearbyResource {
+  id: string;
+  tipo: ResourceType;
+  organismo: string;
+  ciudad: City;
+  estado: ResourceStatus;
+  distanciaMetros: number;
+}
 
 export const UpdateResourceStatusSchema = z.object({
   estado: ResourceStatusEnum,
