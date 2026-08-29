@@ -11,8 +11,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.700.0",
     "@fastify/cors": "^9.0.1",
-    "dotenv": "^17.4.2",
     "fastify": "^4.28.1",
     "zod": "^3.23.8"
   },

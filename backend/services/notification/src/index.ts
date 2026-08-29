@@ -4,11 +4,7 @@ import { ZodError } from "zod";
 import { healthRoutes } from "./routes/health.routes";
 import { notificationRoutes } from "./routes/notification.routes";
 import { AppError } from "./errors";
-import { config as loadEnv } from "dotenv";
-import { resolve } from "node:path";
-
-loadEnv({ path: resolve(process.cwd(), ".env") });
-loadEnv({ path: resolve(process.cwd(), "../../../.env") });
+import { loadConfig } from "./config/secrets";
 
 /**
  * Notification & Status Broadcast
@@ -26,6 +22,8 @@ const PORT = Number(process.env.PORT ?? 3004);
 const SERVICE_NAME = "notification";
 
 async function main() {
+  await loadConfig();
+
   const app = Fastify({ logger: true });
 
   app.setErrorHandler((error, request, reply) => {
@@ -64,4 +62,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((err) => {
+  console.error(`${SERVICE_NAME}: fallo al iniciar —`, err);
+  process.exit(1);
+});
