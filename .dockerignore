@@ -1,0 +1,14 @@
+node_modules
+**/node_modules
+**/dist
+**/build
+frontend
+docs
+.git
+.idea
+.vscode
+*.md
+**/.env
+**/.env.*
+.DS_Store
+npm-debug.log*
