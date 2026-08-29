@@ -1,7 +1,14 @@
 import type { FastifyInstance } from "fastify";
-import { createResource, getNearbyResources, getResource, getResourceStats, listResources, updateResourceStatus } from "../controllers/resource.controller";
-import { createDispatch, getDispatch, listDispatches, releaseResources } from "../controllers/dispatch.controller";
-import { requireAdmin } from "../admin-auth";
+import {
+  createResource,
+  getNearbyResources,
+  getResource,
+  getResourceStats,
+  listResources,
+  updateResourceStatus,
+} from "./resource.controller";
+import { createDispatch, getDispatch, listDispatches, releaseResources } from "./dispatch.controller";
+import { requireAdmin } from "./require-admin";
 
 export async function dispatchRoutes(app: FastifyInstance) {
   app.post("/resources", createResource);

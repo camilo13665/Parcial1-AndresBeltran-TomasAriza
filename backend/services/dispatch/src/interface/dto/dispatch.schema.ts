@@ -1,25 +1,9 @@
 import { z } from "zod";
+import { CITIES, RESOURCE_TYPES, RESOURCE_STATUSES } from "../../domain/entities/resource.entity";
 
-export const CityEnum = z.enum(["CHOCO", "PEREIRA", "CALI", "MANIZALES"]);
-export type City = z.infer<typeof CityEnum>;
-
-export const ResourceTypeEnum = z.enum(["BOMBEROS", "CRUZ_ROJA", "DEFENSA_CIVIL", "UNGRD", "MEDICO", "RESCATE"]);
-export type ResourceType = z.infer<typeof ResourceTypeEnum>;
-
-export const ResourceStatusEnum = z.enum(["DISPONIBLE", "ASIGNADO", "EN_RUTA", "OCUPADO", "INACTIVO"]);
-export type ResourceStatus = z.infer<typeof ResourceStatusEnum>;
-
-export interface Resource {
-  id: string;
-  tipo: ResourceType;
-  organismo: string;
-  ciudad: City;
-  estado: ResourceStatus;
-  latitud?: number;
-  longitud?: number;
-  fechaCreacion: string;
-  fechaActualizacion: string;
-}
+export const CityEnum = z.enum(CITIES);
+export const ResourceTypeEnum = z.enum(RESOURCE_TYPES);
+export const ResourceStatusEnum = z.enum(RESOURCE_STATUSES);
 
 export const CreateResourceSchema = z.object({
   tipo: ResourceTypeEnum,
@@ -45,15 +29,6 @@ export const NearbyResourcesQuerySchema = z.object({
 });
 export type NearbyResourcesQuery = z.infer<typeof NearbyResourcesQuerySchema>;
 
-export interface NearbyResource {
-  id: string;
-  tipo: ResourceType;
-  organismo: string;
-  ciudad: City;
-  estado: ResourceStatus;
-  distanciaMetros: number;
-}
-
 export const UpdateResourceStatusSchema = z.object({
   estado: ResourceStatusEnum,
 });
@@ -63,15 +38,6 @@ export const ListResourcesQuerySchema = z.object({
   tipo: ResourceTypeEnum.optional(),
   estado: ResourceStatusEnum.optional(),
 });
-
-/** Un despacho asocia una emergencia con uno o más recursos asignados para atenderla. */
-export interface Dispatch {
-  id: string;
-  emergenciaId: string;
-  recursoIds: string[];
-  fechaAsignacion: string;
-  notas?: string;
-}
 
 export const CreateDispatchSchema = z.object({
   emergenciaId: z.string().min(1),

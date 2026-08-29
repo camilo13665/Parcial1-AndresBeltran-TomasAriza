@@ -1,10 +1,10 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
-import { healthRoutes } from "./routes/health.routes";
-import { dispatchRoutes } from "./routes/dispatch.routes";
-import { AppError } from "./errors";
-import { loadConfig } from "./config/secrets";
+import { healthRoutes } from "./interface/http/health.routes";
+import { dispatchRoutes } from "./interface/http/dispatch.routes";
+import { AppError } from "./domain/errors";
+import { loadConfig } from "./infrastructure/config/secrets";
 
 /**
  * Dispatch & Resource Assignment
@@ -15,9 +15,12 @@ import { loadConfig } from "./config/secrets";
  *  - consultar disponibilidad de recursos;
  *  - asignar recursos a emergencias (despachos);
  *
- * Sin persistencia todavía: store en memoria, se reinicia con el servicio.
- * No se comparte una base de datos ni un paquete de tipos con los demás
- * microservicios — cada uno es dueño de su propio contrato.
+ * Persistido en Supabase/PostGIS. No se comparte una base de datos ni un
+ * paquete de tipos con los demás microservicios — cada uno es dueño de su
+ * propio contrato. Organizado en capas (Clean Architecture): domain/
+ * (entidades + puertos) <- application/ (casos de uso) <- interface/http/
+ * (Fastify) — con infrastructure/ implementando los puertos y
+ * composition/container.ts cableando todo en el borde del sistema.
  */
 
 const PORT = Number(process.env.PORT ?? 3002);

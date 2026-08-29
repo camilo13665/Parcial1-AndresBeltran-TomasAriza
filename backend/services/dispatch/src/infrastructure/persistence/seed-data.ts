@@ -1,4 +1,5 @@
-import type { City, Dispatch, Resource } from "../schemas/dispatch.schema";
+import { Dispatch } from "../../domain/entities/dispatch.entity";
+import { City, Resource } from "../../domain/entities/resource.entity";
 
 /** Centro aproximado de cada ciudad — mismos puntos que usa Geospatial para sus zonas. */
 const CITY_CENTERS: Record<City, { latitud: number; longitud: number }> = {
@@ -18,8 +19,8 @@ function jitterAroundCity(ciudad: City, seed: number): { latitud: number; longit
   return { latitud: center.latitud + dLat, longitud: center.longitud + dLng };
 }
 
-export const SEED_RESOURCES: Resource[] = [
-  {
+const FIXED_RESOURCES: Resource[] = [
+  new Resource({
     id: "RES-001",
     tipo: "BOMBEROS",
     organismo: "Bomberos Chocó",
@@ -28,8 +29,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("CHOCO", 1),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T08:41:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-002",
     tipo: "CRUZ_ROJA",
     organismo: "Cruz Roja Pereira",
@@ -38,8 +39,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("PEREIRA", 2),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T06:00:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-003",
     tipo: "RESCATE",
     organismo: "UNGRD Cali",
@@ -48,8 +49,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("CALI", 3),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T09:30:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-004",
     tipo: "MEDICO",
     organismo: "Cruz Roja Manizales",
@@ -58,8 +59,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("MANIZALES", 4),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T06:00:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-005",
     tipo: "DEFENSA_CIVIL",
     organismo: "Defensa Civil Cali",
@@ -68,8 +69,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("CALI", 5),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T07:10:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-006",
     tipo: "BOMBEROS",
     organismo: "Bomberos Manizales",
@@ -78,8 +79,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("MANIZALES", 6),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T06:00:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-007",
     tipo: "DEFENSA_CIVIL",
     organismo: "Defensa Civil Chocó",
@@ -88,8 +89,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("CHOCO", 7),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T06:00:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-008",
     tipo: "MEDICO",
     organismo: "Cruz Roja Cali",
@@ -98,8 +99,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("CALI", 8),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T06:00:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-009",
     tipo: "RESCATE",
     organismo: "Bomberos Chocó — Rescate",
@@ -108,8 +109,8 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("CHOCO", 9),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T06:00:00-05:00",
-  },
-  {
+  }),
+  new Resource({
     id: "RES-010",
     tipo: "CRUZ_ROJA",
     organismo: "Cruz Roja Pereira — Unidad 2",
@@ -118,49 +119,54 @@ export const SEED_RESOURCES: Resource[] = [
     ...jitterAroundCity("PEREIRA", 10),
     fechaCreacion: "2026-08-20T06:00:00-05:00",
     fechaActualizacion: "2026-08-20T06:00:00-05:00",
-  },
-  ...([
+  }),
+];
+
+const GENERATED_RESOURCES: Resource[] = (
+  [
     { ciudad: "CHOCO", cantidad: 17 },
     { ciudad: "PEREIRA", cantidad: 18 },
     { ciudad: "CALI", cantidad: 17 },
     { ciudad: "MANIZALES", cantidad: 18 },
-  ] as const).flatMap(({ ciudad, cantidad }, ciudadIndex) =>
-    Array.from({ length: cantidad }, (_, index) => {
-      const numero = 11 + [17, 18, 17, 18].slice(0, ciudadIndex).reduce((total, valor) => total + valor, 0) + index;
-      const tipos = ["BOMBEROS", "CRUZ_ROJA", "DEFENSA_CIVIL", "UNGRD", "MEDICO", "RESCATE"] as const;
-      const tipo = tipos[(numero - 11) % tipos.length];
-      const nombreCiudad = ciudad === "CHOCO" ? "Chocó" : ciudad[0] + ciudad.slice(1).toLowerCase();
-      return {
-        id: `RES-${String(numero).padStart(3, "0")}`,
-        tipo,
-        organismo: `${tipo.replace("_", " ")} ${nombreCiudad} ${index + 1}`,
-        ciudad,
-        estado: "DISPONIBLE" as const,
-        ...jitterAroundCity(ciudad, numero),
-        fechaCreacion: "2026-08-20T06:00:00-05:00",
-        fechaActualizacion: "2026-08-20T06:00:00-05:00",
-      };
-    }),
-  ),
-];
+  ] as const
+).flatMap(({ ciudad, cantidad }, ciudadIndex) =>
+  Array.from({ length: cantidad }, (_, index) => {
+    const numero = 11 + [17, 18, 17, 18].slice(0, ciudadIndex).reduce((total, valor) => total + valor, 0) + index;
+    const tipos = ["BOMBEROS", "CRUZ_ROJA", "DEFENSA_CIVIL", "UNGRD", "MEDICO", "RESCATE"] as const;
+    const tipo = tipos[(numero - 11) % tipos.length];
+    const nombreCiudad = ciudad === "CHOCO" ? "Chocó" : ciudad[0] + ciudad.slice(1).toLowerCase();
+    return new Resource({
+      id: `RES-${String(numero).padStart(3, "0")}`,
+      tipo,
+      organismo: `${tipo.replace("_", " ")} ${nombreCiudad} ${index + 1}`,
+      ciudad,
+      estado: "DISPONIBLE",
+      ...jitterAroundCity(ciudad, numero),
+      fechaCreacion: "2026-08-20T06:00:00-05:00",
+      fechaActualizacion: "2026-08-20T06:00:00-05:00",
+    });
+  }),
+);
+
+export const SEED_RESOURCES: Resource[] = [...FIXED_RESOURCES, ...GENERATED_RESOURCES];
 
 export const SEED_DISPATCHES: Dispatch[] = [
-  {
+  new Dispatch({
     id: "DSP-0001",
     emergenciaId: "EMG-2024-0001",
     recursoIds: ["RES-001"],
     fechaAsignacion: "2026-08-20T08:41:00-05:00",
-  },
-  {
+  }),
+  new Dispatch({
     id: "DSP-0002",
     emergenciaId: "EMG-2024-0002",
     recursoIds: ["RES-003"],
     fechaAsignacion: "2026-08-20T09:30:00-05:00",
-  },
-  {
+  }),
+  new Dispatch({
     id: "DSP-0003",
     emergenciaId: "EMG-2024-0007",
     recursoIds: ["RES-005", "RES-006"],
     fechaAsignacion: "2026-08-20T07:10:00-05:00",
-  },
+  }),
 ];
