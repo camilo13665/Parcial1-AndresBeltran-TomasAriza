@@ -1,0 +1,115 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  # ── CI: corre siempre, en cada push y cada PR ────────────────────────
+  typecheck-backend:
+    name: Typecheck y build — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [intake-triage, dispatch, geospatial, notification]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck --workspace=${{ matrix.service }}
+      - run: npm run build --workspace=${{ matrix.service }}
+
+  lint-and-build-frontend:
+    name: Lint y build — frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --workspace=frontend
+      - run: npm run build --workspace=frontend
+
+  validate-template:
+    name: Validar template.yaml (SAM)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/setup-sam@v2
+      - run: sam validate --lint
+
+  # ── CD: solo en push a main, y solo si el CI de arriba pasó ──────────
+  deploy-backend:
+    name: Deploy backend (Lambda + API Gateway, canary)
+    needs: [typecheck-backend, validate-template]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      api-url: ${{ steps.outputs.outputs.api_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/setup-sam@v2
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: sam build
+        run: sam build
+
+      - name: sam deploy
+        run: |
+          sam deploy \
+            --stack-name emergencias \
+            --region us-east-1 \
+            --resolve-image-repos \
+            --resolve-s3 \
+            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --no-confirm-changeset \
+            --no-fail-on-empty-changeset
+
+      # Ver el comentario en template.yaml: las URLs entre servicios no se
+      # pueden setear desde el propio template (dependencia circular con
+      # el Gateway), así que este paso corre después de cada deploy.
+      - name: Reconectar los servicios entre sí
+        run: |
+          chmod +x scripts/set-lambda-service-urls.sh
+          STACK_NAME=emergencias AWS_REGION=us-east-1 ./scripts/set-lambda-service-urls.sh
+
+      - name: Exponer la URL del API Gateway
+        id: outputs
+        run: |
+          API_URL=$(aws cloudformation describe-stacks --stack-name emergencias --region us-east-1 \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+
+  deploy-frontend:
+    name: Deploy frontend (Vercel)
+    needs: [lint-and-build-frontend, deploy-backend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install -g vercel
+      # Las variables NEXT_PUBLIC_* ya están configuradas en el proyecto
+      # de Vercel (todas apuntan al mismo API Gateway) — no hace falta
+      # pasarlas acá, Vercel las resuelve solo al buildear.
+      - run: vercel deploy --prod --token="$VERCEL_TOKEN" --yes
+        working-directory: frontend
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
