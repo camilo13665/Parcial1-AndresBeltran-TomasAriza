@@ -1,0 +1,293 @@
+<mxfile host="app.diagrams.net" agent="Claude Code" version="24.7.17" type="device">
+
+  <!-- ============================================================ -->
+  <!-- 01 - CONTEXTO -->
+  <!-- ============================================================ -->
+  <diagram name="01 Contexto" id="d1">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="d1_p1" value="&lt;b&gt;Ciudadano&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Persona]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Reporta emergencias y consulta el mapa público&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#08427B;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d1_p2" value="&lt;b&gt;Operador de Emergencias&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Persona]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Prioriza, asigna recursos y cambia estados&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#08427B;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="320" width="180" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d1_sys" value="&lt;b&gt;Sistema de Gestión de Emergencias&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Sistema de software]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Recibe, prioriza, asigna y notifica solicitudes de emergencia en Chocó, Pereira, Cali y Manizales. 4 microservicios serverless.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1061B0;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="380" y="170" width="280" height="180" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d1_ext" value="&lt;b&gt;Supabase&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Sistema externo]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Postgres + PostGIS, con Row Level Security&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C8496;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="800" y="200" width="220" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d1_e1" value="reporta / consulta" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d1_p1" target="d1_sys">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d1_e2" value="prioriza y despacha" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d1_p2" target="d1_sys">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d1_e3" value="REST + RLS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d1_sys" target="d1_ext">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d1_note" value="Ningún organismo de socorro (Cruz Roja, Bomberos, Defensa Civil, UNGRD) se integra por API — sus cuadrillas existen como registros que administra el Operador." style="text;html=1;align=left;valign=top;fontSize=11;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="380" y="400" width="500" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ============================================================ -->
+  <!-- 02 - CONTENEDORES -->
+  <!-- ============================================================ -->
+  <diagram name="02 Contenedores" id="d2">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="950" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="d2_fe" value="&lt;b&gt;Frontend&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Contenedor: Next.js — Vercel]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Dashboard, mapa, formulario de reporte&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="500" y="30" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_gw" value="&lt;b&gt;API Gateway&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Contenedor: AWS HTTP API]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;stage prod · CORS · throttling 50 r/s&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="170" width="320" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_l1" value="&lt;b&gt;Intake &amp;amp; Triage&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Contenedor: AWS Lambda :3001]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Recepción, validación, clasificación P1–P4&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="270" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_l2" value="&lt;b&gt;Dispatch &amp;amp; Resource Assignment&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Contenedor: AWS Lambda :3002]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Recursos, despachos, proximidad PostGIS&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="340" y="340" width="270" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_l3" value="&lt;b&gt;Geospatial &amp;amp; Zone Aggregation&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Contenedor: AWS Lambda :3003]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Zonas monitoreadas, agregación por ciudad&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="640" y="340" width="270" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_l4" value="&lt;b&gt;Notification &amp;amp; Status Broadcast&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Contenedor: AWS Lambda :3004]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Bitácora de cambios de estado&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="940" y="340" width="270" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_sm" value="&lt;b&gt;AWS Secrets Manager&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Sistema externo]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;1 secreto JSON por servicio, leído en cold start&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C8496;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="560" width="270" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_db" value="&lt;b&gt;Supabase — Postgres + PostGIS&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Sistema externo]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;emergencies · resources · dispatches · notifications&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C8496;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="340" y="560" width="870" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d2_dep" value="Cada Lambda tiene un alias &lt;b&gt;prod&lt;/b&gt; gestionado por AWS CodeDeploy — el Gateway invoca el alias, nunca $LATEST directo. Ver diagrama 04 (Despliegue progresivo)." style="rounded=1;whiteSpace=wrap;html=1;dashed=1;arcSize=6;fillColor=none;strokeColor=#666666;fontColor=#666666;align=center;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="700" width="1170" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- vertical flow -->
+        <mxCell id="d2_e1" value="HTTPS / JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d2_fe" target="d2_gw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.25;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="d2_gw" target="d2_l1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.4;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="d2_gw" target="d2_l2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.6;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="d2_gw" target="d2_l3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2_e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.75;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="d2_gw" target="d2_l4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- secrets (dashed) -->
+        <mxCell id="d2_e6" value="cold start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="d2_l1" target="d2_sm">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- db (solid) -->
+        <mxCell id="d2_e7" value="REST · service_role" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.3;exitY=1;entryX=0.15;entryY=0;" edge="1" parent="1" source="d2_l1" target="d2_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2_e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.3;entryY=0;" edge="1" parent="1" source="d2_l2" target="d2_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d2_e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.5;exitY=1;entryX=0.85;entryY=0;" edge="1" parent="1" source="d2_l4" target="d2_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- inter-service, dashed, via gateway -->
+        <mxCell id="d2_e10" value="valida emergencia (GET) — vía Gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#333333;strokeColor=#B85450;endArrow=block;endFill=1;dashed=1;exitX=0;exitY=0.3;entryX=1;entryY=0.3;" edge="1" parent="1" source="d2_l2" target="d2_l1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="230" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e11" value="libera recursos (POST) — vía Gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#333333;strokeColor=#B85450;endArrow=block;endFill=1;dashed=1;exitX=1;exitY=0.7;entryX=0;entryY=0.7;" edge="1" parent="1" source="d2_l1" target="d2_l2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e12" value="notifica cambio de estado (POST) — vía Gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#333333;strokeColor=#B85450;endArrow=block;endFill=1;dashed=1;exitX=1;exitY=0.85;entryX=0;entryY=0.5;" edge="1" parent="1" source="d2_l1" target="d2_l4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="315" y="490" />
+              <mxPoint x="925" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="d2_e13" value="consulta stats (GET) — vía Gateway" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#333333;strokeColor=#B85450;endArrow=block;endFill=1;dashed=1;exitX=0;exitY=0.5;entryX=1;entryY=0.15;" edge="1" parent="1" source="d2_l3" target="d2_l1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="615" y="460" />
+              <mxPoint x="325" y="370" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ============================================================ -->
+  <!-- 03 - COMPONENTES -->
+  <!-- ============================================================ -->
+  <diagram name="03 Componentes" id="d3">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1000" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="d3_bound" value="Contenedor: Intake &amp;amp; Triage — AWS Lambda :3001" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;arcSize=6;fillColor=none;strokeColor=#666666;verticalAlign=top;align=left;fontColor=#666666;spacingLeft=10;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="880" height="660" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_routes" value="&lt;b&gt;Rutas Fastify&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Componente]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;emergency.routes.ts · admin.routes.ts · health.routes.ts&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="100" y="100" width="740" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_ctrl" value="&lt;b&gt;Controladores&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Componente]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;emergency.controller.ts · admin.controller.ts&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="100" y="220" width="740" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_svc" value="&lt;b&gt;emergency.service.ts&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Componente]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Triage P1–P4, flujo de estados, generación de ID&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="100" y="340" width="360" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_cli" value="&lt;b&gt;Clientes HTTP&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Componente]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;dispatch.client.ts · notification.client.ts — await + timeout 3s, best effort (nunca fire-and-forget en Lambda)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="340" width="360" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_db" value="&lt;b&gt;db/supabase.ts&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Componente]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Wrapper REST + service_role&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="100" y="500" width="360" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_cfg" value="&lt;b&gt;config/secrets.ts&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Componente]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Carga secretos una vez por cold start&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="500" width="360" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_out1" value="&lt;b&gt;Supabase&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Sistema externo]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C8496;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="100" y="630" width="360" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_out2" value="&lt;b&gt;API Gateway&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Contenedor — otros servicios]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="480" y="630" width="360" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d3_e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d3_routes" target="d3_ctrl">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3_e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.3;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="d3_ctrl" target="d3_svc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3_e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;exitX=0.7;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="d3_ctrl" target="d3_cli">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3_e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d3_svc" target="d3_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3_e5" value="cold start, no por request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;dashed=1;" edge="1" parent="1" source="d3_cfg" target="d3_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3_e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d3_db" target="d3_out1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d3_e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d3_cli" target="d3_out2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <!-- ============================================================ -->
+  <!-- 04 - DESPLIEGUE PROGRESIVO -->
+  <!-- ============================================================ -->
+  <diagram name="04 Despliegue progresivo" id="d4">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="750" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="d4_alias" value="&lt;b&gt;Alias prod&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Alias Lambda]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#438DD5;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="420" y="30" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d4_old" value="&lt;b&gt;Versión N-1 (estable)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Versión Lambda]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Código en producción&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="80" y="180" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d4_new" value="&lt;b&gt;Versión N (candidata)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Versión Lambda]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Código nuevo, recién publicado&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#85BBF0;fontColor=#000000;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="720" y="180" width="280" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d4_cw" value="&lt;b&gt;Amazon CloudWatch&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Sistema externo]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Alarmas Errors ≥1/60s y Duration &amp;gt;1500ms, sobre el alias&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C8496;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="680" y="340" width="320" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d4_cd" value="&lt;b&gt;AWS CodeDeploy&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;[Sistema externo]&lt;/font&gt;&lt;br&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Controla el corrimiento del alias&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#8C8496;fontColor=#ffffff;strokeColor=none;arcSize=6;align=center;" vertex="1" parent="1">
+          <mxGeometry x="320" y="480" width="260" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d4_e1" value="90%" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d4_alias" target="d4_old">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d4_e2" value="10%" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d4_alias" target="d4_new">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d4_e3" value="mide" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d4_new" target="d4_cw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d4_e4" value="evalúa" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;fontColor=#333333;strokeColor=#666666;endArrow=block;endFill=1;" edge="1" parent="1" source="d4_cw" target="d4_cd">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="d4_e5" value="sin alarma en 5 min → alias al 100% de la versión N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#1E8E5A;strokeColor=#1E8E5A;endArrow=block;endFill=1;" edge="1" parent="1" source="d4_cd" target="d4_new">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="960" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="d4_e6" value="alarma activa (ALARM_ACTIVE) → rollback: alias al 100% de la versión N-1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#C4432B;strokeColor=#C4432B;endArrow=block;endFill=1;" edge="1" parent="1" source="d4_cd" target="d4_old">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="d4_note" value="Probado en vivo: se rompió geospatial a propósito, se generó tráfico real contra el 10% canary, la alarma Errors se disparó y CodeDeploy revirtió el alias solo — sin ningún comando manual de rollback." style="text;html=1;align=left;valign=top;fontSize=11;fontColor=#666666;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="40" y="620" width="260" height="90" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+</mxfile>
