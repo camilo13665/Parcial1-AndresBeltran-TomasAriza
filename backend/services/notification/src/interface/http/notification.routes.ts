@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { createNotification, getNotification, listNotifications } from "../controllers/notification.controller";
+import { createNotification, getNotification, listNotifications } from "./notification.controller";
 
 export async function notificationRoutes(app: FastifyInstance) {
   app.post("/notifications", createNotification);

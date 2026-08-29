@@ -1,24 +1,7 @@
 import { z } from "zod";
+import { EMERGENCY_STATUSES } from "../../domain/entities/notification.entity";
 
-export const EmergencyStatusEnum = z.enum([
-  "RECIBIDA",
-  "VALIDANDO",
-  "PRIORIZADA",
-  "ASIGNADA",
-  "EN_ATENCION",
-  "RESUELTA",
-  "CANCELADA",
-]);
-export type EmergencyStatus = z.infer<typeof EmergencyStatusEnum>;
-
-export interface StatusChangeNotification {
-  id: string;
-  emergenciaId: string;
-  estadoAnterior: EmergencyStatus;
-  estadoNuevo: EmergencyStatus;
-  mensaje: string;
-  fechaCreacion: string;
-}
+export const EmergencyStatusEnum = z.enum(EMERGENCY_STATUSES);
 
 export const CreateNotificationSchema = z.object({
   emergenciaId: z.string().min(1),
