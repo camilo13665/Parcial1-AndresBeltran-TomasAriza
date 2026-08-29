@@ -14,6 +14,7 @@
     "dev:geospatial": "npm run dev --workspace=geospatial",
     "dev:notification": "npm run dev --workspace=notification",
     "dev:backend": "node scripts/dev-backend.mjs",
+    "verify:supabase": "node scripts/verify-supabase.mjs",
     "install:all": "npm install"
   },
   "engines": {

@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import { healthRoutes } from "./routes/health.routes";
 import { zoneRoutes } from "./routes/zone.routes";
 import { AppError } from "./errors";
+import { loadConfig } from "./config/secrets";
 
 /**
  * Geospatial & Zone Aggregation
@@ -21,6 +22,8 @@ const PORT = Number(process.env.PORT ?? 3003);
 const SERVICE_NAME = "geospatial";
 
 async function main() {
+  await loadConfig();
+
   const app = Fastify({ logger: true });
 
   app.setErrorHandler((error, request, reply) => {
@@ -59,4 +62,7 @@ async function main() {
   }
 }
 
-main();
+main().catch((err) => {
+  console.error(`${SERVICE_NAME}: fallo al iniciar —`, err);
+  process.exit(1);
+});

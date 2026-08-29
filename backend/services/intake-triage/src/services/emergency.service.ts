@@ -9,6 +9,15 @@ type EmergencyRow = Omit<Emergency, "datosEspecificos" | "fechaCreacion" | "fech
   fecha_actualizacion: string;
 };
 
+/**
+ * Columnas explícitas para todo select/representation: `ubicacion` (geography,
+ * agregada en 002_rls_and_postgis.sql) es un espejo interno para consultas
+ * espaciales, no un campo del contrato REST — sin este `select`, PostgREST
+ * la devuelve igual que cualquier otra columna (como WKB en crudo).
+ */
+const SELECT_COLUMNS =
+  "id,tipo,prioridad,ciudad,descripcion,latitud,longitud,estado,datos_especificos,fecha_creacion,fecha_actualizacion";
+
 function fromRow(row: EmergencyRow): Emergency {
   return {
     ...row,
@@ -62,13 +71,13 @@ export const emergencyService = {
       fechaActualizacion: timestamp,
       datosEspecificos: input.datosEspecificos,
     };
-    const rows = await supabaseQuery<EmergencyRow[]>("emergencies", "", { method: "POST", body: JSON.stringify(toRow(emergency)) });
+    const rows = await supabaseQuery<EmergencyRow[]>("emergencies", `select=${SELECT_COLUMNS}`, { method: "POST", body: JSON.stringify(toRow(emergency)) });
     return fromRow(rows[0]);
   },
 
   async list(filters: ListFilters): Promise<Emergency[]> {
     await ensureSeeded();
-    const params = new URLSearchParams({ select: "*", order: "fecha_creacion.desc" });
+    const params = new URLSearchParams({ select: SELECT_COLUMNS, order: "fecha_creacion.desc" });
     if (filters.ciudad) params.set("ciudad", `eq.${filters.ciudad}`);
     if (filters.prioridad) params.set("prioridad", `eq.${filters.prioridad}`);
     if (filters.estado) params.set("estado", `eq.${filters.estado}`);
@@ -78,7 +87,7 @@ export const emergencyService = {
 
   async getById(id: string): Promise<Emergency> {
     await ensureSeeded();
-    const rows = await supabaseQuery<EmergencyRow[]>("emergencies", `id=eq.${encodeURIComponent(id)}&select=*`);
+    const rows = await supabaseQuery<EmergencyRow[]>("emergencies", `id=eq.${encodeURIComponent(id)}&select=${SELECT_COLUMNS}`);
     if (!rows[0]) throw new NotFoundError(`No existe una emergencia con id ${id}`);
     return fromRow(rows[0]);
   },
@@ -91,7 +100,7 @@ export const emergencyService = {
     if (nuevoEstado !== "CANCELADA" && (nextIndex === -1 || nextIndex !== currentIndex + 1)) {
       throw new ConflictError(`Transición inválida: ${emergency.estado} -> ${nuevoEstado}. El siguiente estado válido es ${STATUS_FLOW[currentIndex + 1] ?? "ninguno"}.`);
     }
-    const rows = await supabaseQuery<EmergencyRow[]>("emergencies", `id=eq.${encodeURIComponent(id)}`, {
+    const rows = await supabaseQuery<EmergencyRow[]>("emergencies", `id=eq.${encodeURIComponent(id)}&select=${SELECT_COLUMNS}`, {
       method: "PATCH",
       body: JSON.stringify({ estado: nuevoEstado, fecha_actualizacion: new Date().toISOString() }),
     });

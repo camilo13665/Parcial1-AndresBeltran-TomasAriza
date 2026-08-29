@@ -1,5 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { CreateResourceSchema, ListResourcesQuerySchema, UpdateResourceStatusSchema } from "../schemas/dispatch.schema";
+import { CreateResourceSchema, ListResourcesQuerySchema, NearbyResourcesQuerySchema, UpdateResourceStatusSchema } from "../schemas/dispatch.schema";
 import { resourceService } from "../services/dispatch.service";
 
 export async function createResource(request: FastifyRequest, reply: FastifyReply) {
@@ -27,4 +27,11 @@ export async function updateResourceStatus(request: FastifyRequest<{ Params: { i
 
 export async function getResourceStats(_request: FastifyRequest, reply: FastifyReply) {
   return reply.status(200).send(await resourceService.stats());
+}
+
+/** Proximidad real (PostGIS): recursos dentro de un radio de un punto, ordenados por distancia. */
+export async function getNearbyResources(request: FastifyRequest, reply: FastifyReply) {
+  const query = NearbyResourcesQuerySchema.parse(request.query);
+  const items = await resourceService.nearby(query);
+  return reply.status(200).send({ data: items, total: items.length });
 }

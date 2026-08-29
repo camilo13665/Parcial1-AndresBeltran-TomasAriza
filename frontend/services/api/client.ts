@@ -76,8 +76,13 @@ async function request<T>(service: ServiceName, path: string, init?: RequestInit
 }
 
 export const apiClient = {
-  /** Consulta el health check de un microservicio específico. */
-  health: (service: ServiceName) => request<HealthResponse>(service, "/health"),
+  /**
+   * Consulta el health check de un microservicio específico. Usa el alias
+   * con nombre ("/health/intake", no "/health") porque en producción los 4
+   * servicios comparten el mismo origen (un único API Gateway) — "/health"
+   * a secas no alcanza para distinguir cuál responde.
+   */
+  health: (service: ServiceName) => request<HealthResponse>(service, `/health/${service}`),
 
   /** Atajo genérico GET. */
   get: <T>(service: ServiceName, path: string, init?: RequestInit) => request<T>(service, path, { ...init, method: "GET" }),

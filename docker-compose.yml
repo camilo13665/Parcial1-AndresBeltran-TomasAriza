@@ -1,0 +1,58 @@
+name: gestion-emergencias
+
+# Orquesta los 4 microservicios como contenedores en una red local, usando
+# las mismas imágenes que se publicarían en ECR para Lambda. Ninguna imagen
+# ni el compose leen un archivo .env de la aplicación: las variables se
+# resuelven desde el entorno del shell (o un .env local de docker compose,
+# nunca commiteado) y se inyectan directo al contenedor.
+services:
+  intake-triage:
+    build:
+      context: .
+      dockerfile: backend/services/intake-triage/Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: "3001"
+      SUPABASE_URL: ${SUPABASE_URL:?Falta SUPABASE_URL en el entorno}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?Falta SUPABASE_SERVICE_ROLE_KEY en el entorno}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:?Falta ADMIN_SESSION_SECRET en el entorno}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?Falta ADMIN_USERNAME en el entorno}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Falta ADMIN_PASSWORD en el entorno}
+      DISPATCH_SERVICE_URL: http://dispatch:3002
+      NOTIFICATION_SERVICE_URL: http://notification:3004
+
+  dispatch:
+    build:
+      context: .
+      dockerfile: backend/services/dispatch/Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: "3002"
+      SUPABASE_URL: ${SUPABASE_URL:?Falta SUPABASE_URL en el entorno}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?Falta SUPABASE_SERVICE_ROLE_KEY en el entorno}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:?Falta ADMIN_SESSION_SECRET en el entorno}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:?Falta ADMIN_USERNAME en el entorno}
+      INTAKE_SERVICE_URL: http://intake-triage:3001
+
+  geospatial:
+    build:
+      context: .
+      dockerfile: backend/services/geospatial/Dockerfile
+    ports:
+      - "3003:3003"
+    environment:
+      PORT: "3003"
+      INTAKE_SERVICE_URL: http://intake-triage:3001
+
+  notification:
+    build:
+      context: .
+      dockerfile: backend/services/notification/Dockerfile
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: "3004"
+      SUPABASE_URL: ${SUPABASE_URL:?Falta SUPABASE_URL en el entorno}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?Falta SUPABASE_SERVICE_ROLE_KEY en el entorno}

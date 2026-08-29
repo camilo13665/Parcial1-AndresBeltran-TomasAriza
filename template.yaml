@@ -1,0 +1,450 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Gestion de Emergencias — 4 microservicios Fastify empaquetados como
+  imagenes de contenedor en AWS Lambda (via AWS Lambda Web Adapter, sin
+  reescribir los servicios), detras de un API Gateway HTTP API compartido
+  (stage prod). Los secretos se leen en cada cold start desde AWS Secrets
+  Manager — ver backend/services/*/src/config/secrets.ts.
+
+Parameters:
+  BudgetAlertEmail:
+    Type: String
+    Default: tomas13ariza@gmail.com
+    Description: Correo que recibe las alertas de AWS Budgets (50% consumo real, 85% proyectado).
+  MonthlyBudgetLimitUsd:
+    Type: Number
+    Default: 10
+    Description: Límite mensual estricto del presupuesto, en USD.
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 512
+    Architectures: [arm64]
+    # Cada deploy publica una versión inmutable nueva y el alias "prod"
+    # empieza a recibirla gradualmente (ver DeploymentPreference por
+    # función, más abajo) en vez de saltar de golpe.
+    AutoPublishAlias: prod
+    Environment:
+      Variables:
+        STAGE: prod
+        # El endpoint execute-api por defecto (sin dominio propio) incluye
+        # el nombre del stage como prefijo literal del path que llega a la
+        # función (".../prod/emergencies"); el adapter lo quita antes de
+        # reenviar al Fastify local, que no conoce ese prefijo.
+        AWS_LWA_REMOVE_BASE_PATH: /prod
+
+Resources:
+  # ── Gobernanza de costos (sección 6 del enunciado) ─────────────────────
+  # Presupuesto mensual estricto con 2 alertas por correo: consumo REAL
+  # >50% y consumo PROYECTADO >85%. AWS::Budgets::Budget es un recurso de
+  # cuenta (no de región), pero se declara acá para que quede versionado
+  # junto con el resto de la infraestructura.
+  MonthlyCostBudget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: emergencias-presupuesto-mensual
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit:
+          Amount: !Ref MonthlyBudgetLimitUsd
+          Unit: USD
+      NotificationsWithSubscribers:
+        - Notification:
+            NotificationType: ACTUAL
+            ComparisonOperator: GREATER_THAN
+            Threshold: 50
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref BudgetAlertEmail
+        - Notification:
+            NotificationType: FORECASTED
+            ComparisonOperator: GREATER_THAN
+            Threshold: 85
+            ThresholdType: PERCENTAGE
+          Subscribers:
+            - SubscriptionType: EMAIL
+              Address: !Ref BudgetAlertEmail
+
+  EmergenciasHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - https://frontend-five-cyan-17.vercel.app
+          - http://localhost:3000
+        AllowMethods: [GET, POST, PATCH, OPTIONS]
+        AllowHeaders: [Content-Type, Authorization]
+        MaxAge: 300
+      DefaultRouteSettings:
+        ThrottlingRateLimit: 50
+        ThrottlingBurstLimit: 100
+
+  # ── Alarmas de CloudWatch para el rollback automático del canary ──────
+  # Cada una mira SOLO el alias "prod" (dimension Resource = función:alias):
+  # si se dispara durante la ventana Canary10Percent5Minutes, CodeDeploy
+  # revierte el alias al 100% de la versión anterior sin intervención manual.
+  IntakeTriageErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Errores del alias prod de intake-triage durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref IntakeTriageFunction
+        - Name: Resource
+          Value: !Sub "${IntakeTriageFunction}:prod"
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+  IntakeTriageLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Latencia > 1500ms del alias prod de intake-triage durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref IntakeTriageFunction
+        - Name: Resource
+          Value: !Sub "${IntakeTriageFunction}:prod"
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1500
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  DispatchErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Errores del alias prod de dispatch durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref DispatchFunction
+        - Name: Resource
+          Value: !Sub "${DispatchFunction}:prod"
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+  DispatchLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Latencia > 1500ms del alias prod de dispatch durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref DispatchFunction
+        - Name: Resource
+          Value: !Sub "${DispatchFunction}:prod"
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1500
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  GeospatialErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Errores del alias prod de geospatial durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GeospatialFunction
+        - Name: Resource
+          Value: !Sub "${GeospatialFunction}:prod"
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+  GeospatialLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Latencia > 1500ms del alias prod de geospatial durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref GeospatialFunction
+        - Name: Resource
+          Value: !Sub "${GeospatialFunction}:prod"
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1500
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  NotificationErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Errores del alias prod de notification durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref NotificationFunction
+        - Name: Resource
+          Value: !Sub "${NotificationFunction}:prod"
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+  NotificationLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Latencia > 1500ms del alias prod de notification durante un despliegue canary
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref NotificationFunction
+        - Name: Resource
+          Value: !Sub "${NotificationFunction}:prod"
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 1500
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+  IntakeTriageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: emergencias-intake-triage
+      PackageType: Image
+      Environment:
+        Variables:
+          PORT: "3001"
+          AWS_LWA_PORT: "3001"
+          # DISPATCH_SERVICE_URL / NOTIFICATION_SERVICE_URL: NO se pueden
+          # setear acá — referenciar la URL del propio Gateway desde una
+          # función que ese Gateway también invoca es una dependencia
+          # circular para CloudFormation. Se completan después del deploy
+          # con scripts/set-lambda-service-urls.sh (una vez que el Gateway
+          # ya tiene URL real).
+      Policies:
+        - Statement:
+            - Sid: ReadOwnSecret
+              Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:emergencias/prod/intake-triage-*
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes
+        Alarms:
+          - !Ref IntakeTriageErrorsAlarm
+          - !Ref IntakeTriageLatencyAlarm
+      Events:
+        Emergencies:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /emergencies
+            Method: ANY
+        EmergenciesProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: "/emergencies/{proxy+}"
+            Method: ANY
+        Admin:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /admin
+            Method: ANY
+        AdminProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: "/admin/{proxy+}"
+            Method: ANY
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /health/intake
+            Method: GET
+    Metadata:
+      DockerContext: .
+      Dockerfile: backend/services/intake-triage/Dockerfile
+      DockerTag: prod
+
+  DispatchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: emergencias-dispatch
+      PackageType: Image
+      Environment:
+        Variables:
+          PORT: "3002"
+          AWS_LWA_PORT: "3002"
+          # INTAKE_SERVICE_URL: idem — se completa post-deploy (ver arriba).
+      Policies:
+        - Statement:
+            - Sid: ReadOwnSecret
+              Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:emergencias/prod/dispatch-*
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes
+        Alarms:
+          - !Ref DispatchErrorsAlarm
+          - !Ref DispatchLatencyAlarm
+      Events:
+        Resources:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /resources
+            Method: ANY
+        ResourcesProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: "/resources/{proxy+}"
+            Method: ANY
+        Dispatches:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /dispatches
+            Method: ANY
+        DispatchesProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: "/dispatches/{proxy+}"
+            Method: ANY
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /health/dispatch
+            Method: GET
+    Metadata:
+      DockerContext: .
+      Dockerfile: backend/services/dispatch/Dockerfile
+      DockerTag: prod
+
+  GeospatialFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: emergencias-geospatial
+      PackageType: Image
+      Environment:
+        Variables:
+          PORT: "3003"
+          AWS_LWA_PORT: "3003"
+          # INTAKE_SERVICE_URL: idem — se completa post-deploy (ver arriba).
+      Policies:
+        - Statement:
+            - Sid: ReadOwnSecret
+              Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:emergencias/prod/geospatial-*
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes
+        Alarms:
+          - !Ref GeospatialErrorsAlarm
+          - !Ref GeospatialLatencyAlarm
+      Events:
+        Zones:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /zones
+            Method: ANY
+        ZonesProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: "/zones/{proxy+}"
+            Method: ANY
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /health/geospatial
+            Method: GET
+    Metadata:
+      DockerContext: .
+      Dockerfile: backend/services/geospatial/Dockerfile
+      DockerTag: prod
+
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: emergencias-notification
+      PackageType: Image
+      Environment:
+        Variables:
+          PORT: "3004"
+          AWS_LWA_PORT: "3004"
+      Policies:
+        - Statement:
+            - Sid: ReadOwnSecret
+              Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:emergencias/prod/notification-*
+      DeploymentPreference:
+        Type: Canary10Percent5Minutes
+        Alarms:
+          - !Ref NotificationErrorsAlarm
+          - !Ref NotificationLatencyAlarm
+      Events:
+        Notifications:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /notifications
+            Method: ANY
+        NotificationsProxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: "/notifications/{proxy+}"
+            Method: ANY
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EmergenciasHttpApi
+            Path: /health/notification
+            Method: GET
+    Metadata:
+      DockerContext: .
+      Dockerfile: backend/services/notification/Dockerfile
+      DockerTag: prod
+
+Outputs:
+  ApiUrl:
+    Description: Endpoint base del API Gateway (stage prod)
+    Value: !Sub https://${EmergenciasHttpApi}.execute-api.${AWS::Region}.amazonaws.com/prod
+  IntakeTriageFunctionArn:
+    Value: !GetAtt IntakeTriageFunction.Arn
+  DispatchFunctionArn:
+    Value: !GetAtt DispatchFunction.Arn
+  GeospatialFunctionArn:
+    Value: !GetAtt GeospatialFunction.Arn
+  NotificationFunctionArn:
+    Value: !GetAtt NotificationFunction.Arn

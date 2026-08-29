@@ -9,7 +9,7 @@ function fromRow(row: NotificationRow): StatusChangeNotification {
 
 export const notificationService = {
   async create(input: CreateNotificationInput): Promise<StatusChangeNotification> {
-    const rows = await supabaseQuery<NotificationRow[]>("notifications", "", { method: "POST", body: JSON.stringify({ emergencia_id: input.emergenciaId, estado_anterior: input.estadoAnterior, estado_nuevo: input.estadoNuevo, mensaje: input.mensaje ?? `El estado cambió de ${input.estadoAnterior} a ${input.estadoNuevo}.` }) });
+    const rows = await supabaseQuery<NotificationRow[]>("notifications", "", { method: "POST", body: JSON.stringify({ id: `NOT-${Date.now()}`, emergencia_id: input.emergenciaId, estado_anterior: input.estadoAnterior, estado_nuevo: input.estadoNuevo, mensaje: input.mensaje ?? `El estado cambió de ${input.estadoAnterior} a ${input.estadoNuevo}.` }) });
     return fromRow(rows[0]);
   },
   async list(emergenciaId?: string): Promise<StatusChangeNotification[]> {
