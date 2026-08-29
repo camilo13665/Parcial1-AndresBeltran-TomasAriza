@@ -1,24 +1,18 @@
+import { DispatchGateway } from "../../domain/ports/dispatch-gateway.port";
+import { GatewayResult } from "../../domain/ports/notification-gateway.port";
+
 /**
- * Cliente HTTP hacia Dispatch & Resource Assignment.
- *
- * Cuando una emergencia llega a un estado final (RESUELTA o CANCELADA),
- * Intake & Triage le avisa a Dispatch para que libere los recursos que
- * tenía asignados. Sin este aviso, un recurso quedaba reservado para
- * siempre después de atender una sola emergencia. Es "best effort": si
- * Dispatch no responde, la transición de estado en Intake & Triage se
- * confirma igual — el operador puede liberar el recurso manualmente si
- * hace falta.
+ * Adapter HTTP hacia Dispatch & Resource Assignment. Cuando una emergencia
+ * llega a un estado final (RESUELTA o CANCELADA), se le avisa a Dispatch
+ * para que libere los recursos que tenía asignados. Es "best effort": si
+ * Dispatch no responde, la transición de estado se confirma igual — el
+ * operador puede liberar el recurso manualmente si hace falta.
  */
 const DISPATCH_SERVICE_URL = process.env.DISPATCH_SERVICE_URL ?? "http://localhost:3002";
 const TIMEOUT_MS = 3000;
 
-export interface ReleaseResult {
-  ok: boolean;
-  mensaje?: string;
-}
-
-export const dispatchClient = {
-  async releaseResources(emergenciaId: string): Promise<ReleaseResult> {
+export class HttpDispatchGateway implements DispatchGateway {
+  async releaseResources(emergenciaId: string): Promise<GatewayResult> {
     try {
       const response = await fetch(`${DISPATCH_SERVICE_URL}/resources/release`, {
         method: "POST",
@@ -35,5 +29,5 @@ export const dispatchClient = {
       const reason = err instanceof Error ? err.message : String(err);
       return { ok: false, mensaje: `No se pudo conectar con Dispatch & Resource Assignment: ${reason}` };
     }
-  },
-};
+  }
+}

@@ -5,8 +5,8 @@ import {
   getStats,
   listEmergencies,
   updateEmergencyStatus,
-} from "../controllers/emergency.controller";
-import { requireAdmin } from "../controllers/admin.controller";
+} from "./emergency.controller";
+import { requireAdmin } from "./admin.controller";
 
 export async function emergencyRoutes(app: FastifyInstance) {
   app.post("/emergencies", createEmergency);

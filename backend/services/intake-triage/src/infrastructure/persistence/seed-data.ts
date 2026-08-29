@@ -1,12 +1,12 @@
-import type { Emergency } from "../schemas/emergency.schema";
+import { Emergency } from "../../domain/entities/emergency.entity";
 
 /**
- * Datos semilla — NO conectados a base de datos.
- * Poblan el store en memoria al arrancar el servicio para que el
- * Frontend tenga datos reales que consultar desde el primer momento.
+ * Datos semilla — insertados vía "on_conflict=id, ignore-duplicates" al
+ * primer read, para que el Frontend tenga datos reales que consultar desde
+ * el primer momento sin depender de que alguien los haya creado antes.
  */
 export const SEED_EMERGENCIES: Emergency[] = [
-  {
+  new Emergency({
     id: "EMG-2024-0001",
     tipo: "SEARCH_RESCUE_MEDICAL",
     prioridad: "CRITICA",
@@ -24,8 +24,8 @@ export const SEED_EMERGENCIES: Emergency[] = [
       fuego: false,
       otrosRiesgos: "Estructura inestable, riesgo de colapso total.",
     },
-  },
-  {
+  }),
+  new Emergency({
     id: "EMG-2024-0002",
     tipo: "SHELTER_TEMPORARY_HOUSING",
     prioridad: "ALTA",
@@ -43,8 +43,8 @@ export const SEED_EMERGENCIES: Emergency[] = [
       requerimientosAccesibilidad: "Adulto mayor con movilidad reducida.",
       estadoHabitabilidadVivienda: "NO_HABITABLE",
     },
-  },
-  {
+  }),
+  new Emergency({
     id: "EMG-2024-0003",
     tipo: "BASIC_SUPPLIES_HUMANITARIAN_AID",
     prioridad: "MEDIA",
@@ -59,8 +59,8 @@ export const SEED_EMERGENCIES: Emergency[] = [
       categoriaInsumo: "AGUA_POTABLE",
       cantidadRequerida: 400,
     },
-  },
-  {
+  }),
+  new Emergency({
     id: "EMG-2024-0004",
     tipo: "STRUCTURAL_DAMAGE_ASSESSMENT",
     prioridad: "BAJA",
@@ -77,8 +77,8 @@ export const SEED_EMERGENCIES: Emergency[] = [
       asentamiento: false,
       riesgoColapsoSobreVias: false,
     },
-  },
-  {
+  }),
+  new Emergency({
     id: "EMG-2024-0005",
     tipo: "SEARCH_RESCUE_MEDICAL",
     prioridad: "CRITICA",
@@ -95,8 +95,8 @@ export const SEED_EMERGENCIES: Emergency[] = [
       fugaDeGas: false,
       fuego: false,
     },
-  },
-  {
+  }),
+  new Emergency({
     id: "EMG-2024-0006",
     tipo: "SHELTER_TEMPORARY_HOUSING",
     prioridad: "ALTA",
@@ -113,8 +113,8 @@ export const SEED_EMERGENCIES: Emergency[] = [
       numeroAdultosMayores: 1,
       estadoHabitabilidadVivienda: "NO_HABITABLE",
     },
-  },
-  {
+  }),
+  new Emergency({
     id: "EMG-2024-0007",
     tipo: "BASIC_SUPPLIES_HUMANITARIAN_AID",
     prioridad: "MEDIA",
@@ -129,8 +129,8 @@ export const SEED_EMERGENCIES: Emergency[] = [
       categoriaInsumo: "KIT_PRIMEROS_AUXILIOS",
       cantidadRequerida: 25,
     },
-  },
-  {
+  }),
+  new Emergency({
     id: "EMG-2024-0008",
     tipo: "STRUCTURAL_DAMAGE_ASSESSMENT",
     prioridad: "BAJA",
@@ -147,5 +147,5 @@ export const SEED_EMERGENCIES: Emergency[] = [
       asentamiento: false,
       riesgoColapsoSobreVias: true,
     },
-  },
+  }),
 ];

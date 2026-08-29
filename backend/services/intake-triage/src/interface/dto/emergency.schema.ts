@@ -1,57 +1,15 @@
 import { z } from "zod";
+import { CITIES, EMERGENCY_PRIORITIES, EMERGENCY_STATUSES, EMERGENCY_TYPES } from "../../domain/entities/emergency.entity";
 
 /**
- * Contrato de dominio de Intake & Triage.
- *
- * Cada microservicio es dueño de su propio contrato (no se comparte un
- * paquete de tipos entre servicios en tiempo de ejecución, para mantenerlos
- * verdaderamente desacoplados). En una fase posterior esto podría
- * formalizarse con un registro de esquemas o un paquete de contratos
- * versionado.
+ * DTOs de la capa interface: validan la forma externa (HTTP/JSON) y la
+ * convierten en los tipos de dominio. Los enums se derivan de domain/entities
+ * (fuente única de verdad) — el dominio no depende de Zod ni de esta capa.
  */
-
-export const CityEnum = z.enum(["CHOCO", "PEREIRA", "CALI", "MANIZALES"]);
-export type City = z.infer<typeof CityEnum>;
-
-export const EmergencyTypeEnum = z.enum([
-  "SEARCH_RESCUE_MEDICAL",
-  "SHELTER_TEMPORARY_HOUSING",
-  "BASIC_SUPPLIES_HUMANITARIAN_AID",
-  "STRUCTURAL_DAMAGE_ASSESSMENT",
-]);
-export type EmergencyType = z.infer<typeof EmergencyTypeEnum>;
-
-export const EmergencyPriorityEnum = z.enum(["CRITICA", "ALTA", "MEDIA", "BAJA"]);
-export type EmergencyPriority = z.infer<typeof EmergencyPriorityEnum>;
-
-export const EmergencyStatusEnum = z.enum([
-  "RECIBIDA",
-  "VALIDANDO",
-  "PRIORIZADA",
-  "ASIGNADA",
-  "EN_ATENCION",
-  "RESUELTA",
-  "CANCELADA",
-]);
-export type EmergencyStatus = z.infer<typeof EmergencyStatusEnum>;
-
-/** Mapeo de tipo de emergencia -> prioridad. Es la regla de clasificación (triage) de esta fase. */
-export const PRIORITY_BY_TYPE: Record<EmergencyType, EmergencyPriority> = {
-  SEARCH_RESCUE_MEDICAL: "CRITICA",
-  SHELTER_TEMPORARY_HOUSING: "ALTA",
-  BASIC_SUPPLIES_HUMANITARIAN_AID: "MEDIA",
-  STRUCTURAL_DAMAGE_ASSESSMENT: "BAJA",
-};
-
-/** Flujo válido de estados. Usado para rechazar transiciones que no tienen sentido. */
-export const STATUS_FLOW: EmergencyStatus[] = [
-  "RECIBIDA",
-  "VALIDANDO",
-  "PRIORIZADA",
-  "ASIGNADA",
-  "EN_ATENCION",
-  "RESUELTA",
-];
+export const CityEnum = z.enum(CITIES);
+export const EmergencyTypeEnum = z.enum(EMERGENCY_TYPES);
+export const EmergencyPriorityEnum = z.enum(EMERGENCY_PRIORITIES);
+export const EmergencyStatusEnum = z.enum(EMERGENCY_STATUSES);
 
 const searchRescueMedicalSchema = z.object({
   personasAtrapadasOHeridas: z.number().int().min(0),
@@ -123,20 +81,6 @@ export type CreateEmergencyInput = z.infer<typeof CreateEmergencySchema>;
 export const UpdateStatusSchema = z.object({
   estado: EmergencyStatusEnum,
 });
-
-export interface Emergency {
-  id: string;
-  tipo: EmergencyType;
-  prioridad: EmergencyPriority;
-  ciudad: City;
-  descripcion: string;
-  latitud: number;
-  longitud: number;
-  estado: EmergencyStatus;
-  fechaCreacion: string;
-  fechaActualizacion: string;
-  datosEspecificos: CreateEmergencyInput["datosEspecificos"];
-}
 
 export const ListEmergenciesQuerySchema = z.object({
   ciudad: CityEnum.optional(),
