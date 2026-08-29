@@ -34,12 +34,15 @@ export async function updateEmergencyStatus(
   const estadoAnterior = (await emergencyService.getById(request.params.id)).estado;
   const emergency = await emergencyService.updateStatus(request.params.id, estado);
 
-  // Al llegar a un estado final, los recursos que tenía asignados esta
-  // emergencia deben volver a estar disponibles antes de continuar con
-  // sincronizaciones secundarias como las notificaciones.
-  void notificationClient.notifyStatusChange(emergency.id, estadoAnterior, emergency.estado);
+  // "Best effort", pero SIEMPRE con await: en Lambda el proceso se congela
+  // apenas se devuelve la respuesta, así que una llamada fire-and-forget
+  // (sin await) puede quedar a medio terminar y nunca completarse. Los
+  // clientes ya atrapan sus propios errores y tienen timeout de 3s, así que
+  // esperar su resultado no rompe la respuesta principal si el otro
+  // servicio falla — solo evita que Lambda mate la llamada en pleno vuelo.
+  await notificationClient.notifyStatusChange(emergency.id, estadoAnterior, emergency.estado);
   if (emergency.estado === "RESUELTA" || emergency.estado === "CANCELADA") {
-    void dispatchClient.releaseResources(emergency.id);
+    await dispatchClient.releaseResources(emergency.id);
   }
 
   return reply.status(200).send(emergency);
