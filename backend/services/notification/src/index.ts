@@ -1,10 +1,10 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
-import { healthRoutes } from "./routes/health.routes";
-import { notificationRoutes } from "./routes/notification.routes";
-import { AppError } from "./errors";
-import { loadConfig } from "./config/secrets";
+import { healthRoutes } from "./interface/http/health.routes";
+import { notificationRoutes } from "./interface/http/notification.routes";
+import { AppError } from "./domain/errors";
+import { loadConfig } from "./infrastructure/config/secrets";
 
 /**
  * Notification & Status Broadcast

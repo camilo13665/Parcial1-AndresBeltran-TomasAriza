@@ -1,10 +1,10 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
-import { healthRoutes } from "./routes/health.routes";
-import { zoneRoutes } from "./routes/zone.routes";
-import { AppError } from "./errors";
-import { loadConfig } from "./config/secrets";
+import { healthRoutes } from "./interface/http/health.routes";
+import { zoneRoutes } from "./interface/http/zone.routes";
+import { AppError } from "./domain/errors";
+import { loadConfig } from "./infrastructure/config/secrets";
 
 /**
  * Geospatial & Zone Aggregation

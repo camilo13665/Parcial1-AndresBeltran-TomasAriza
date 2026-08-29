@@ -1,23 +1,20 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { ZodError } from "zod";
-import { healthRoutes } from "./routes/health.routes";
-import { emergencyRoutes } from "./routes/emergency.routes";
-import { adminRoutes } from "./routes/admin.routes";
-import { AppError } from "./errors";
-import { loadConfig } from "./config/secrets";
+import { healthRoutes } from "./interface/http/health.routes";
+import { emergencyRoutes } from "./interface/http/emergency.routes";
+import { adminRoutes } from "./interface/http/admin.routes";
+import { AppError } from "./domain/errors";
+import { loadConfig } from "./infrastructure/config/secrets";
 
 /**
  * Intake & Triage
  * ----------------
- * Responsabilidad futura:
- *  - recibir emergencias reportadas por ciudadanos;
- *  - validar la informacion recibida;
- *  - clasificar la prioridad (P1-P4);
- *  - exponer consulta de emergencias.
- *
- * En esta fase el servicio solo expone /health. La logica de negocio
- * (controllers/handlers/services) se implementara en la siguiente fase.
+ * Recibe emergencias reportadas, las valida, clasifica su prioridad (triage)
+ * y expone su consulta. Organizado en capas (Clean Architecture):
+ * domain/ (entidades + puertos) <- application/ (casos de uso) <-
+ * interface/http/ (Fastify) — con infrastructure/ implementando los puertos
+ * y composition/container.ts cableando todo en el borde del sistema.
  */
 
 const PORT = Number(process.env.PORT ?? 3001);
