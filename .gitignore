@@ -35,6 +35,10 @@ Thumbs.db
 # TypeScript build info
 *.tsbuildinfo
 
+# AWS SAM
+.aws-sam/
+samconfig.toml
+
 # Coverage
 coverage/
 
