@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { aggregateZones, listZones, nearestZone, zoneStats } from "../controllers/zone.controller";
+import { aggregateZones, listZones, nearestZone, zoneStats } from "./zone.controller";
 
 export async function zoneRoutes(app: FastifyInstance) {
   app.get("/zones", listZones);
