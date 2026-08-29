@@ -43,11 +43,15 @@ export function AssignResourcePanel({ emergenciaId, ciudad, estado, onAssigned }
   const eligible = estado === EmergencyStatus.PRIORIZADA;
 
   useEffect(() => {
-    if (isAdmin !== true || !eligible) {
-      setLoadingResources(false);
-      return;
-    }
+    // Nada que cargar — y el render ya corta antes con otra tarjeta en
+    // ambos casos (isAdmin !== true / !eligible), así que loadingResources
+    // no llega a leerse mientras esta condición sea cierta.
+    if (isAdmin !== true || !eligible) return;
     let cancelled = false;
+    // Arranca un fetch real acá abajo (ver el .then/.catch/.finally) — es
+    // el flag de "cargando" de siempre antes de pedir datos, no algo que
+    // se pueda derivar sin re-disparar el mismo fetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingResources(true);
     resourcesApi
       .list({ ciudad, estado: ResourceStatus.DISPONIBLE })

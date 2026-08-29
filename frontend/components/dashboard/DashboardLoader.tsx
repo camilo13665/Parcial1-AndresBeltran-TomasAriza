@@ -16,20 +16,23 @@ export function DashboardLoader() {
   // asignar recurso) necesita forzar un refresco de todos los paneles.
   const [reloadKey, setReloadKey] = useState(0);
 
-  const load = useCallback(async () => {
-    try {
-      const [emergenciesRes, resourcesRes] = await Promise.all([emergenciesApi.list(), resourcesApi.list()]);
-      setEmergencies(emergenciesRes.data as unknown as Emergency[]);
-      setResources(resourcesRes.data as unknown as EmergencyResource[]);
-      setState("live");
-    } catch {
-      setState("offline");
-    }
-  }, []);
-
   useEffect(() => {
-    load();
-  }, [load, reloadKey]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const [emergenciesRes, resourcesRes] = await Promise.all([emergenciesApi.list(), resourcesApi.list()]);
+        if (cancelled) return;
+        setEmergencies(emergenciesRes.data as unknown as Emergency[]);
+        setResources(resourcesRes.data as unknown as EmergencyResource[]);
+        setState("live");
+      } catch {
+        if (!cancelled) setState("offline");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
 
   const handleChanged = useCallback(() => {
     setReloadKey((k) => k + 1);
